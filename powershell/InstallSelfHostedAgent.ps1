@@ -22,9 +22,6 @@ Param
 
 	[Parameter(Mandatory=$true)]
 	[string]$AdminUser,
-
-	[Parameter(Mandatory=$true)]
-	[array]$Modules,
 	
 	[boolean]$prerelease=$false
 )
@@ -124,22 +121,5 @@ if (!(Test-Path -Path C:\Modules -ErrorAction SilentlyContinue))
 Install-PackageProvider NuGet -Force
 Import-PackageProvider NuGet -Force
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-
-# Installing New Modules and Removing Old
-Foreach ($Module in $Modules)
-{	Find-Module -Name $Module.Name -RequiredVersion $Module.Version -Repository PSGallery -Verbose | Save-Module -Path C:\Modules -Verbose	}
-
-$DefaultModules = "PowerShellGet", "PackageManagement","Pester"
-
-Foreach ($Module in $DefaultModules)
-{
-	if ($tmp = Get-Module $Module -ErrorAction SilentlyContinue) {	Remove-Module $Module -Force	}
-	Find-Module -Name $Module -Repository PSGallery -Verbose | Install-Module -Force -Confirm:$false -SkipPublisherCheck -Verbose
-}
-
-# Uninstalling old Azure PowerShell Modules
-$programName = "Microsoft Azure PowerShell"
-$app = Get-WmiObject -Class Win32_Product -Filter "Name Like '$($programName)%'" -Verbose
-$app.Uninstall()
 
 Write-Verbose "Exiting InstallVSTSAgent.ps1" -Verbose
